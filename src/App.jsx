@@ -1,33 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState } from 'react'
 import './App.css'
+import Description from './components/Description';
+import Options from './components/Options';
+import Feedback from './components/Feedback';
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const localFeedback = JSON.parse(localStorage.getItem('feedback')) || {
+    good: 0,
+    neutral: 0,
+    bad: 0
+  }
+  const [feedback, setFeedback] = useState(localFeedback)
+  const updateFeedback = feedbackType => {
+
+    setFeedback({
+      ...feedback,
+      [feedbackType]: feedback[feedbackType] + 1
+    })
+
+    // Burada durumu güncellemek için setter'ı kullan
+  }
+  const totalFeedback = feedback.good + feedback.neutral + feedback.bad
+  const resetFeedback = () => {
+    setFeedback({
+      good: 0,
+      neutral: 0,
+      bad: 0
+    })
+    localStorage.removeItem('feedback')
+  }
+  useEffect(() => {
+    localStorage.setItem('feedback', JSON.stringify(feedback))
+  })
+  const positiveFeedback = Math.round((feedback.good / totalFeedback) * 100)
+
+
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Description />
+      <Options
+        updateFeedback={updateFeedback}
+        totalFeedback={totalFeedback}
+        resetFeedback={resetFeedback}
+      />
+      <Feedback
+        good={feedback.good}
+        neutral={feedback.neutral}
+        bad={feedback.bad}
+        total={totalFeedback}
+        positive={positiveFeedback ? positiveFeedback : 0}
+      />
     </>
   )
 }
